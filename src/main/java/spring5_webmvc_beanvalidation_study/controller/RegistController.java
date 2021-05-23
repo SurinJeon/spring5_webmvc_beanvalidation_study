@@ -1,5 +1,7 @@
 package spring5_webmvc_beanvalidation_study.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -35,11 +37,21 @@ public class RegistController {
 	}
 
 	@PostMapping("/step3")
-	public String handleStep3(RegistRequest request) {
+	public String handleStep3(@Valid RegistRequest request, Errors errors) {
+		if(errors.hasErrors()) {
+			return "register/step2";
+		}
+		
+		if(!request.isPasswordEqualToConfirmPassword()) {
+			errors.rejectValue("confirmPassword", "nomatch");
+			return "register/step2";
+		}
+		
 		try {
 			memberRegisterService.regist(request);
 			return "register/step3";
 		} catch (DuplicateMemberException e) {
+			errors.rejectValue("email", "duplicate");
 			return "register/step2";
 		}
 	}
